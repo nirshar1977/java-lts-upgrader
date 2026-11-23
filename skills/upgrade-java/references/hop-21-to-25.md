@@ -2,14 +2,13 @@
 
 ## Gate
 
-If the project is still on Spring Boot 2.x, do not start this hop: Boot 2.x does not support Java 25. Tell the user the project stays on Java 21 until the Boot 3 upgrade is approved, and offer to run it now.
+Spring Boot must be 3.5+ before this hop (Boot 2.x and 3.0–3.4 do not support Java 25). The combined plan puts the Spring step first. With `--no-spring`, or if the user declined it, stop at Java 21 and explain why.
 
 ## Recipes
 
-1. `org.openrewrite.java.migrate.UpgradeToJava25` — release 25, `UpgradePluginsForJava25` (Maven plugin bumps), Spring Boot 3 parent bump for 25, deprecated API replacements.
-2. Spring Boot 3.x below 3.5 → `org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_5` (minimum for Java 25 support).
-3. Spring Boot 4 (only if the user approved it in the plan): `org.openrewrite.java.spring.boot4.UpgradeSpringBoot_4_0` — brings Spring Framework 7, Security 7, Jackson 3, Hibernate 7.1, modular starters. Separate commit after the Java 25 build is green: `chore: upgrade Spring Boot 3.5 → 4.0`.
-4. Jakarta EE 11 if the runtime supports it and the user approved: `org.openrewrite.java.migrate.jakarta.JakartaEE11`.
+1. `org.openrewrite.java.migrate.UpgradeToJava25` — release 25, `UpgradePluginsForJava25` (Maven plugin bumps), deprecated API replacements.
+2. Spring Boot: handled as separate Spring steps in the combined plan (see `upgrade-spring` references). Do not run Spring recipes inside this hop. Boot 4.x, if planned, comes after this hop is green.
+3. Jakarta EE 11 if the runtime supports it and the user approved: `org.openrewrite.java.migrate.jakarta.JakartaEE11`.
 
 ## Manual checklist
 

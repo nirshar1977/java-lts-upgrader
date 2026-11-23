@@ -3,7 +3,7 @@
 ## Recipes
 
 1. `org.openrewrite.java.migrate.UpgradeToJava21` — release 21, plugin bumps, deprecated API replacements, SequencedCollection idioms (`getFirst()`/`getLast()`), etc.
-2. Spring Boot 3.0–3.1 → `org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_5` (Java 21 is first-class from Boot 3.2). Spring Boot 2.7 on Java 21 works for most apps but is out of OSS support — recommend the Boot 3 upgrade from hop 11→17 if it was skipped.
+2. Spring Boot: handled as separate Spring steps in the combined plan (see `upgrade-spring` references). Do not run Spring recipes inside this hop. Java 21 is first-class from Boot 3.2; Boot 2.7 runs on 21 for most apps but is out of OSS support — recommend the Boot 3 upgrade if the plan skips it.
 3. Jakarta EE 9 → 10 if the runtime supports it and the user approved: `org.openrewrite.java.migrate.jakarta.JakartaEE10`.
 
 ## Manual checklist

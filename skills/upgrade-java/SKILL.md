@@ -1,7 +1,7 @@
 ---
 name: upgrade-java
-description: This skill should be used when the user asks to "upgrade Java", "migrate to Java 17/21/25", "move my project to the next LTS", "upgrade from Java 11", "bump the JDK", or "upgrade Spring Boot along with Java" for a Maven project. It upgrades the project one LTS hop at a time (11 → 17 → 21 → 25), running OpenRewrite recipes, fixing remaining build and test failures, and committing after each verified hop.
-argument-hint: "[target-version: 17|21|25] [--no-spring] [--no-jakarta] [--dry-run]"
+description: This skill should be used when the user asks to "upgrade Java", "migrate to Java 17/21/25", "move my project to the next LTS", "upgrade from Java 11", "bump the JDK", or "upgrade Java and Spring Boot together" for a Maven project. It upgrades the project one LTS hop at a time (11 → 17 → 21 → 25), interleaving the Spring Boot steps the Java target needs (or the `--spring` target), running OpenRewrite recipes, fixing remaining build and test failures, and committing after each verified step.
+argument-hint: "[target-version: 17|21|25] [--spring <2.7|3.0|3.5|4.0|4.1>] [--no-spring] [--no-jakarta] [--dry-run]"
 ---
 
 # Upgrade a Maven Java project across LTS versions
@@ -11,7 +11,8 @@ Upgrade the current Maven project from its detected Java version to the target L
 ## Arguments
 
 - `target-version` — 17, 21 or 25. Default 25. Reject anything that is not an LTS above the current version.
-- `--no-spring` — upgrade Java only; leave Spring Boot versions alone.
+- `--spring <version>` — also upgrade Spring Boot to this version in the same run (combined Java + Spring plan).
+- `--no-spring` — upgrade Java only; leave Spring Boot versions alone. If a Java hop is impossible on the current Boot version (e.g. Boot 2.x on Java 25), stop before that hop and say why.
 - `--no-jakarta` — do not run the `javax.*` → `jakarta.*` migration for non-Spring projects.
 - `--dry-run` — run every OpenRewrite recipe with `rewrite:dryRun`, write the patch files into `upgrade-reports/`, and change nothing else.
 
@@ -26,8 +27,10 @@ Upgrade the current Maven project from its detected Java version to the target L
 7. Run a baseline build on the current JDK: `<mvn> -B -q clean verify`. If the baseline already fails, stop and report — do not upgrade a broken build. Save the list of failing tests if the user chooses to proceed anyway.
 8. Choose the OpenRewrite access mode — read `references/openrewrite-setup.md` and follow it. The result is one of `rewrite` (recipes available) or `manual` (Claude performs the edits from the hop checklists).
 
-Present a short plan (current version, hops, frameworks found, rewrite mode, JDK per hop). In the same message, ask once (AskUserQuestion when available) about the changes that are breaking beyond the JDK itself, and only those that apply:
-- Spring Boot major upgrades (2.x → 3.5 during hop 11→17; 3.5 → 4.0 after hop 21→25). Minor bumps needed for JDK support (→ 2.7, → 3.5) happen without asking.
+9. **Spring projects.** If Spring Boot is detected and `--no-spring` is not set, build one combined plan of Java hops and Spring steps using `${CLAUDE_PLUGIN_ROOT}/skills/upgrade-spring/references/compatibility.md` and execute Spring steps exactly as the `upgrade-spring` skill describes (Step 1, "Spring step"). The Spring target is `--spring <version>` if given; otherwise the lowest Boot version that supports the Java target (2.7 for Java 17/21 from Boot 2.x, 3.5 for Java 25), unless the user approves going further.
+
+Present a short plan (current version, ordered Java hops and Spring steps, frameworks found, rewrite mode, JDK per hop). In the same message, ask once (AskUserQuestion when available) about the changes that are breaking beyond the JDK itself, and only those that apply:
+- Spring Boot major upgrades beyond the minimum the Java target needs (e.g. 2.7 → 3.x, 3.5 → 4.x), unless `--spring` already chose the target. Bumps required for JDK support happen without asking.
 - `javax` → `jakarta` for non-Spring projects (the runtime/app server must support it).
 - JUnit 4 → 5.
 If the user is not present, take the conservative choice (no Spring major upgrade, no Jakarta move, no JUnit move), say so at the top of the summary, and continue.
@@ -45,7 +48,7 @@ For each hop in order, read the matching reference before touching code:
 Within a hop:
 
 1. **Java recipe.** Run the hop's Java recipe (command form in `references/openrewrite-setup.md`). In `manual` mode, apply the hop checklist by hand instead.
-2. **Framework recipes.** Run the framework recipes the hop reference lists for what Step 0 detected (Spring Boot, Jakarta, testing libraries). Run them as separate invocations so each diff is reviewable. Skip Spring with `--no-spring`, Jakarta with `--no-jakarta`.
+2. **Framework recipes.** Run the non-Spring framework recipes the hop reference lists for what Step 0 detected (Jakarta, testing libraries), as separate invocations so each diff is reviewable. Skip Jakarta with `--no-jakarta`. Spring Boot changes are never made inside a Java hop; they are separate Spring steps in the combined plan, each with its own commit.
 3. **Pin the version.** Make sure every module ends with a single source of truth: `<maven.compiler.release>N</maven.compiler.release>` (remove stale `source`/`target`). Update toolchains, `.java-version`, `.sdkmanrc`, `.tool-versions`, Dockerfiles (`FROM eclipse-temurin:N`), and CI files (`.github/workflows/*.yml` `java-version`, `.gitlab-ci.yml`, `Jenkinsfile`) to N.
 4. **Build on the target JDK.** Set `JAVA_HOME` to the hop's target JDK and run `<mvn> -B clean verify`. Capture output to `upgrade-reports/hop-<from>-<to>-build.log`.
 5. **Fix loop.** While the build fails, read `references/troubleshooting.md`, diagnose the first root error (not cascading ones), apply the smallest correct fix, and rebuild. Prefer upgrading a plugin/dependency over changing code; prefer changing code over suppressing warnings. Never delete or `@Disabled` a test, never add `-DskipTests`, never lower the target version to make it pass. Stop after **8** fix iterations without progress and report the remaining errors to the user with your diagnosis.

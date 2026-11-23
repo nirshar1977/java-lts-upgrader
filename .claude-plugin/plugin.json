@@ -1,7 +1,18 @@
 {
   "name": "java-lts-upgrader",
-  "version": "0.1.0",
-  "description": "Automatically upgrades Maven-based Java projects across LTS releases (11 → 17 → 21 → 25) one hop at a time, using OpenRewrite recipes plus Claude-driven fixes, including Spring Boot, Jakarta EE, Lombok and Mockito.",
-  "author": { "name": "java-lts-upgrader" },
-  "keywords": ["java", "lts", "upgrade", "migration", "maven", "openrewrite", "spring-boot", "jakarta"]
+  "version": "0.2.0",
+  "description": "Automatically upgrades Maven projects across Java LTS releases (11 → 17 → 21 → 25) and Spring Boot generations (2.x → 2.7 → 3.0 → 3.5 → 4.x), separately or together, one verified step at a time with OpenRewrite plus Claude-driven fixes.",
+  "author": {
+    "name": "java-lts-upgrader"
+  },
+  "keywords": [
+    "java",
+    "lts",
+    "upgrade",
+    "migration",
+    "maven",
+    "openrewrite",
+    "spring-boot",
+    "jakarta"
+  ]
 }

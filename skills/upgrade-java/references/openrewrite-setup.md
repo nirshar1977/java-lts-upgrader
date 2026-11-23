@@ -20,7 +20,7 @@ Run recipes from the command line so the project's `pom.xml` never needs a perma
 | Module coordinates | Used for |
 |---|---|
 | `org.openrewrite.recipe:rewrite-migrate-java:RELEASE` | `UpgradeToJava17/21/25`, Jakarta (`jakarta.JavaxMigrationToJakarta`, `jakarta.JakartaEE10`, `jakarta.JakartaEE11`) |
-| `org.openrewrite.recipe:rewrite-spring:RELEASE` | `boot2.UpgradeSpringBoot_2_7`, `boot3.UpgradeSpringBoot_3_5`, `boot4.UpgradeSpringBoot_4_0` |
+| `org.openrewrite.recipe:rewrite-spring:RELEASE` | `boot2.UpgradeSpringBoot_2_7`, `boot3.UpgradeSpringBoot_3_0`, `boot3.UpgradeSpringBoot_3_5`, `boot4.UpgradeSpringBoot_4_0`, `framework.UpgradeSpringFramework_6_0/_6_2/_7_0` |
 | `org.openrewrite.recipe:rewrite-testing-frameworks:RELEASE` | JUnit 4 → 5, Mockito upgrades |
 
 Recipe IDs are fully qualified with the prefix `org.openrewrite.java.migrate.` or `org.openrewrite.java.spring.` respectively. Confirm an ID exists with `rewrite-maven-plugin:discover` if a run reports "recipe not found".

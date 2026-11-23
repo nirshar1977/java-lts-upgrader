@@ -3,10 +3,9 @@
 ## Recipes (in this order, each its own invocation)
 
 1. `org.openrewrite.java.migrate.UpgradeToJava17` — sets the release to 17, bumps build plugins, replaces deprecated APIs, adopts some 17 idioms.
-2. Spring Boot below 2.7 → `org.openrewrite.java.spring.boot2.UpgradeSpringBoot_2_7` (Boot < 2.5 does not support Java 17). Commit this inside the hop.
-3. Spring Boot 2.x → 3.x (only if the user approved the Spring major upgrade in the plan): `org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_5`. It includes the `javax` → `jakarta` move. Make this a **separate commit** after the Java 17 build is green: `chore: upgrade Spring Boot 2.7 → 3.5`.
-4. Non-Spring project with `javax.*` EE imports, and `--no-jakarta` not set, and the user approved it: `org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta` — warn that the app server/runtime must also support Jakarta EE 9+ (e.g. Tomcat 10+, WildFly 27+). Separate commit.
-5. JUnit 4 present → offer `org.openrewrite.java.testing.junit5.JUnit4to5Migration` (optional, separate commit).
+2. Spring Boot: handled as separate Spring steps in the combined plan (see `upgrade-spring` references). Do not run Spring recipes inside this hop. Boot below 2.5 cannot run on Java 17, so the plan puts Boot → 2.7 before this hop.
+3. Non-Spring project with `javax.*` EE imports, and `--no-jakarta` not set, and the user approved it: `org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta` — warn that the app server/runtime must also support Jakarta EE 9+ (e.g. Tomcat 10+, WildFly 27+). Separate commit.
+4. JUnit 4 present → offer `org.openrewrite.java.testing.junit5.JUnit4to5Migration` (optional, separate commit).
 
 ## Manual checklist (also verify after recipes)
 
